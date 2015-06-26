@@ -6,16 +6,13 @@
 #include <Windows.h>
 #include <stdlib.h>
 #include <gl/glut.h>
+#include <gl/GL.h>
 #include <math.h>
 #include <string.h>
 #include <vector>
 
-int window_size_x = 500;
-int window_size_y = window_size_x;
-double node_Radius = 0.04;
-int i = 0;
-int j = 0;
-int k = 0;
+float c[3];
+int num_count = 0;
 typedef struct{
 	double x[3];
 }position;
@@ -34,55 +31,52 @@ typedef struct{
 	position acc;		//加速度
 	double color_grad;
 }node2;
-static node node_surface[2][2][2];
-void sphere(double R, double precise, GLfloat sph_col[10]){
-	// 球の描画
-	//半透明表示
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glMaterialfv(GL_FRONT, GL_DIFFUSE, sph_col);
-	GLUquadricObj *sphere; //オブジェクトポインタを準備
-	sphere = gluNewQuadric();	//オブジェクトを生成 
-	//オブジェクトの描画タイプを設定（省略可）
-	gluQuadricDrawStyle(sphere, GLU_FILL);
-	//球を描画 半径1.0，緯経それぞれ10.0分割
-	gluSphere(sphere, R, precise, precise);
-}
-void initiation(){
-	
-	node_surface[i][j][k].pos.x[0] = 3.0;
-	node_surface[i][j][k].pos.x[1] = 3.0;
-	node_surface[i][j][k].pos.x[2] = 0.0;
+static node2 node_surface2[4];
+void Initiation(void){
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glEnable(GL_DEPTH_TEST);
 
-}
-void node_simulation(){
-	initiation();
-	GLfloat changing[] = { 0.5, 0.5, 1.0, 1.0 };
-	glPushMatrix();
-	glCullFace(GL_BACK);
-	glTranslated((GLdouble)node_surface[i][j][k].pos.x[0], (GLdouble)node_surface[i][j][k].pos.x[1], node_surface[i][j][k].pos.x[2]);
-	sphere(node_Radius, 10.0, changing);
-	glBegin(GL_POINT);
-	glVertex3f(node_surface[i][j][k].pos.x[0], node_surface[i][j][k].pos.x[1], node_surface[i][j][k].pos.x[2]);
+	gluPerspective(30.0, 1, 0.1, 1000.0);
 
-	glEnd();
-
-	glPopMatrix();
+	gluLookAt(
+		0.0, -100.0, 50.0,
+		0.0, 100.0, 0.0,
+		0.0, 0.0, 1.0);
 }
-void display()
-{
+void display(void){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	node_simulation();
+	
+	
+	// Sphere
+	glPushMatrix();
+	for (int i = 0; i < 4; i++){
+		glColor3d(1.0, 0.0, 0.0);
+		glTranslated(node_surface2[i].pos.x[0], node_surface2[i].pos.x[1], node_surface2[i].pos.x[2]);
+		glutSolidSphere(4.0, 20, 20);
+	}
+	glPopMatrix();
+
+
+	glutSwapBuffers();
 }
 int main(int argc, char *argv[])
 {
+	int i ;
+	for (i = 0; i < 4; i++){
+		printf("Put Cordinate %d\n", i+1);
+		scanf_s("%f, %f, %f", &c[0], &c[1], &c[2]);
+		node_surface2[i].pos.x[0] = c[0];
+		node_surface2[i].pos.x[1] = c[1];
+		node_surface2[i].pos.x[2] = c[2];
+	}
 
-	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(window_size_x, window_size_y);
 	glutInit(&argc, argv);
+	glutInitWindowPosition(0, 0);
+	glutInitWindowSize(500, 500);
 	glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH);
 	glutCreateWindow(argv[0]);
 	glutDisplayFunc(display);
+	Initiation();
 	glutMainLoop();
 	
 	return 0;
